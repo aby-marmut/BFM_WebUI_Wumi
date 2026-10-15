@@ -1,0 +1,48 @@
+<!doctype html><html lang="id"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#edf6ff" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#050a14" media="(prefers-color-scheme: dark)"><title>Wumi — WebUI Mirror</title>
+<style>
+:root{color-scheme:dark;--bg:#050a14;--panel:rgba(11,20,38,.88);--ink:#eef7ff;--mute:#8fa8c5;--line:rgba(111,190,255,.22);--ac:#45d9ff;--acink:#04111e;--bd:#ff8198;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root[data-theme="light"]{color-scheme:light;--bg:#edf6ff;--panel:rgba(255,255,255,.92);--ink:#10253d;--mute:#58718c;--line:rgba(28,108,166,.2);--ac:#087eb5;--acink:#fff;--bd:#b42345}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#050a14;--panel:rgba(11,20,38,.88);--ink:#eef7ff;--mute:#8fa8c5;--line:rgba(111,190,255,.22);--ac:#45d9ff;--acink:#04111e;--bd:#ff8198}
+*,*:before,*:after{box-sizing:inherit}
+html,body{min-height:100%;margin:0}
+body{position:relative;isolation:isolate;overflow-x:hidden;min-height:100svh;background:radial-gradient(ellipse at 15% 12%,rgba(24,107,190,.2),transparent 34%),radial-gradient(ellipse at 90% 85%,rgba(0,218,255,.12),transparent 35%),var(--bg);color:var(--ink);font:500 15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif;display:grid;place-items:center;padding:28px 18px}
+body:before,body:after{content:"";position:fixed;z-index:-1;pointer-events:none}
+body:before{inset:0;background-image:linear-gradient(rgba(104,174,235,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(104,174,235,.055) 1px,transparent 1px);background-size:36px 36px;mask-image:linear-gradient(to bottom,black,transparent 88%)}
+body:after{width:320px;height:320px;right:-170px;top:-170px;border:1px solid rgba(69,217,255,.22);border-radius:50%;box-shadow:0 0 0 28px rgba(69,217,255,.025),0 0 0 58px rgba(69,217,255,.02)}
+form{position:relative;width:100%;max-width:410px;padding:clamp(26px,7vw,42px);background:var(--panel);border:1px solid var(--line);border-radius:24px;box-shadow:0 28px 90px rgba(0,0,0,.34),inset 0 1px rgba(255,255,255,.055);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);overflow:hidden}
+form:before{content:"";position:absolute;top:0;left:12%;right:12%;height:2px;background:linear-gradient(90deg,transparent,var(--ac),#8a7dff,transparent);opacity:.95}
+.brand{display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:30px;padding-bottom:26px;border-bottom:1px solid var(--line)}
+.wlogo{width:68px;height:68px;filter:drop-shadow(0 10px 24px rgba(47,107,255,.38))}
+.wname{margin-top:16px;font-weight:850;font-size:32px;line-height:1;letter-spacing:-.03em;background:linear-gradient(90deg,var(--ac),#0BA678);-webkit-background-clip:text;background-clip:text;color:transparent}
+.brand-t1{margin-top:14px;color:var(--ink);font-size:15px;font-weight:700;letter-spacing:.02em;line-height:1.4}
+.brand-t2{margin-top:2px;color:var(--mute);font-size:13px;font-weight:600;letter-spacing:.02em;line-height:1.4}
+label{display:block;font-size:12px;font-weight:750;letter-spacing:.04em;margin:17px 0 7px;color:var(--ink)}
+input{width:100%;font:inherit;padding:13px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(2,9,20,.35);color:var(--ink);min-height:49px;transition:border-color .2s,box-shadow .2s,background .2s}
+:root[data-theme="light"] input{background:rgba(235,246,255,.8)}
+input::placeholder{color:var(--mute)}
+input:focus{border-color:var(--ac);outline:0;box-shadow:0 0 0 3px rgba(69,217,255,.1);background:rgba(10,27,46,.7)}
+button{width:100%;margin-top:24px;padding:12px 16px;font:inherit;font-weight:800;letter-spacing:.04em;border:1px solid rgba(255,255,255,.18);border-radius:12px;background:linear-gradient(105deg,var(--ac),#8aeaff);color:var(--acink);min-height:50px;cursor:pointer;box-shadow:0 8px 26px rgba(34,190,235,.19);transition:transform .18s,filter .18s,box-shadow .18s}
+button:hover{filter:brightness(1.07);box-shadow:0 10px 32px rgba(34,190,235,.28)}
+button:active{transform:scale(.99)}
+input:focus-visible,button:focus-visible{outline:2px solid var(--ac);outline-offset:3px}
+.pw{position:relative}.pw input{padding-right:54px}.pw button{position:absolute;right:3px;top:3px;width:43px;height:43px;min-height:0;margin:0;padding:0;background:transparent;color:var(--mute);border:0;box-shadow:none;display:grid;place-items:center;border-radius:9px}
+.pw button:hover{color:var(--ac);filter:none}.pw svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.sl{display:none}.shown .sl{display:inline}
+#m{color:var(--bd);font-size:12px;min-height:20px;margin-top:12px;overflow-wrap:anywhere}
+.security-note{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:23px;padding-top:17px;border-top:1px solid var(--line);color:var(--mute);font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+.security-note:before{content:"";width:6px;height:6px;flex:0 0 6px;border-radius:50%;background:#57e6a6;box-shadow:0 0 10px rgba(87,230,166,.65)}
+@media(max-width:380px){body{padding:18px 12px}form{padding:25px 21px;border-radius:20px}.brand{margin-bottom:22px;padding-bottom:22px}.wlogo{width:60px;height:60px}.wname{font-size:28px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;scroll-behavior:auto!important}}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){color-scheme:light;--bg:#edf6ff;--panel:rgba(255,255,255,.92);--ink:#10253d;--mute:#58718c;--line:rgba(28,108,166,.2);--ac:#087eb5;--acink:#fff;--bd:#b42345}:root:not([data-theme="dark"]) input{background:rgba(235,246,255,.8)}:root:not([data-theme="dark"]) input:focus{background:#fff}}</style></head><body>
+<form id="f">
+<div class="brand"><svg class="wlogo" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="wmg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2F6BFF"/><stop offset="1" stop-color="#0BA678"/></linearGradient></defs><rect width="32" height="32" rx="9" fill="url(#wmg)"/><path d="M7.5 11l3.2 10 5.3-8.2 5.3 8.2 3.2-10" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="25" cy="7" r="2" fill="#fff" fill-opacity=".85"/></svg><div class="wname">Wumi</div><div class="brand-t1">WebUI Mirror.</div><div class="brand-t2">Android Modem Control</div></div>
+<label for="u">Pengguna</label><input id="u" value="admin" autocomplete="username">
+<label for="p">Sandi</label><div class="pw"><input id="p" type="password" autocomplete="current-password" autofocus><button type="button" id="eye" aria-label="Tampilkan sandi" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><path class="sl" d="M3 3l18 18"/></svg></button></div>
+<button>Masuk</button><div id="m" role="alert"></div><div class="security-note">Protected session · Local access</div></form>
+<script>
+f.onsubmit=function(e){e.preventDefault();m.textContent='';
+fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user:u.value,pass:p.value})})
+.then(function(r){if(r.ok)location='/';else r.text().then(function(t){m.textContent=t})})
+.catch(function(){m.textContent='Tidak dapat menghubungi server'})};
+eye.onclick=function(){var s=p.type=='password';p.type=s?'text':'password';this.setAttribute('aria-pressed',s);this.setAttribute('aria-label',s?'Sembunyikan sandi':'Tampilkan sandi');this.classList.toggle('shown',s);p.focus()};
+</script></body></html>

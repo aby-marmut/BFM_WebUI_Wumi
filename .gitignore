@@ -1,0 +1,11 @@
+# biner dan hasil build
+/note8ui
+/wumi
+*.zip
+# dashboard MetaCubeXD (diisi build.sh dari ~/metacubexd-dist.tgz)
+/web/zash/
+# cadangan dan sementara
+*.bak*
+*.new
+7zz*
+auth.json

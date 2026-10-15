@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
+<meta name="color-scheme" content="dark">
+<title>Terminal</title>
+<link rel="stylesheet" href="/term/xterm.css">
+<style>
+*{box-sizing:border-box}
+html,body{-webkit-text-size-adjust:100%;text-size-adjust:100%;margin:0;height:100%;background:#0b0f14;color:#d6dde6;font:14px system-ui,sans-serif;overflow:hidden}
+body{display:flex;flex-direction:column;height:100dvh}
+#bar{display:flex;align-items:center;gap:6px;padding:8px 10px;padding-top:calc(8px + env(safe-area-inset-top,0px));background:#121821;border-bottom:1px solid #1f2937}
+#bar a,#bar button,#keys button,#slb button{font:inherit;color:#d6dde6;background:#1b2431;border:1px solid #2a3647;border-radius:9px;height:36px;min-width:36px;padding:0 10px;display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+#st{flex:1;font-size:12px;opacity:.85;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+#t{flex:1;min-height:0;padding:4px 6px}
+#keys{display:flex;flex-direction:column;align-items:center;gap:6px;padding:6px;padding-bottom:calc(6px + env(safe-area-inset-bottom,0px));background:#121821;border-top:1px solid #1f2937}
+.kr{display:flex;gap:5px;width:100%;max-width:720px}
+#keys button{flex:1 1 0;min-width:0;padding:0;height:40px;font-size:13px;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+#keys button.on{background:#2f6fed;border-color:#2f6fed;color:#fff}
+.xterm{height:100%}
+#slx{position:fixed;inset:0;z-index:20;background:#0b0f14;display:none;flex-direction:column}
+#slx.on{display:flex}
+#slb{display:flex;align-items:center;gap:6px;padding:8px 10px;padding-top:calc(8px + env(safe-area-inset-top,0px));background:#121821;border-bottom:1px solid #1f2937}
+#slb button{user-select:none;-webkit-user-select:none;touch-action:manipulation}
+#slm{flex:1;min-width:0;font-size:12px;opacity:.85;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+#slt{flex:1;min-height:0;margin:0;padding:10px;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));overflow:auto;-webkit-overflow-scrolling:touch;-webkit-text-size-adjust:100%;text-size-adjust:100%;user-select:text;-webkit-user-select:text;white-space:pre-wrap;word-break:break-all;font:12.5px/1.45 monospace;color:#d6dde6}
+</style></head><body>
+<div id="bar"><a href="/">&lsaquo; WebUI</a><span id="st">Menyambung...</span><button id="sl" title="Pilih atau salin teks">Salin</button><button id="fm" title="Perkecil">A&minus;</button><button id="fp" title="Perbesar">A+</button><button id="rc" title="Sambung ulang">&#8635;</button></div>
+<div id="t"></div>
+<div id="keys">
+<div class="kr"><button data-k="esc">Esc</button><button data-k="tab">Tab</button><button data-k="ctrl" id="kc">Ctrl</button><button data-k="^C">^C</button><button data-k="^D">^D</button><button data-k="-">-</button><button data-k="/">/</button><button data-k="|">|</button><button data-k="~">~</button></div>
+<div class="kr"><button data-k="left">&larr;</button><button data-k="down">&darr;</button><button data-k="up">&uarr;</button><button data-k="right">&rarr;</button><button data-k="home">Home</button><button data-k="end">End</button><button data-k="pgup">PgUp</button><button data-k="pgdn">PgDn</button></div>
+</div>
+<div id="slx"><div id="slb"><button id="slc">Tutup</button><button id="slr">Segarkan</button><button id="sly">Salin</button><span id="slm"></span></div><pre id="slt"></pre></div>
+<script src="/term/xterm.js"></script>
+<script src="/term/addon-fit.js"></script>
+<script>
+(function(){
+var $=function(i){return document.getElementById(i)};
+var term=new Terminal({cursorBlink:true,fontSize:14,fontFamily:'monospace',scrollback:3000,theme:{background:'#0b0f14'}});
+var fit=new FitAddon.FitAddon();term.loadAddon(fit);
+term.open($('t'));
+var ws=null,ctrl=false,beat=null,opened=false,enc=new TextEncoder();
+function st(s){$('st').textContent=s}
+function send(s){if(ws&&ws.readyState===1)ws.send(enc.encode(s))}
+function doFit(){try{fit.fit()}catch(e){}if(ws&&ws.readyState===1)ws.send(JSON.stringify({r:[term.cols,term.rows]}))}
+function vv(){var v=window.visualViewport;document.body.style.height=(v?Math.round(v.height*v.scale):window.innerHeight)+'px';doFit()}
+function connect(){
+  if(ws){try{ws.onclose=null;ws.close()}catch(e){}}
+  clearInterval(beat);opened=false;st('Menyambung...');
+  ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host+'/api/term/ws');
+  ws.binaryType='arraybuffer';
+  ws.onopen=function(){opened=true;st('Terhubung (root)');doFit();term.focus();beat=setInterval(function(){if(ws&&ws.readyState===1)ws.send('{"p":1}')},20000)};
+  ws.onmessage=function(e){term.write(new Uint8Array(e.data))};
+  ws.onclose=function(){
+    clearInterval(beat);st('Terputus. Ketuk tombol sambung ulang');
+    if(!opened)fetch('/api/status').then(function(r){if(r.status===401)location.href='/login'}).catch(function(){})
+  };
+}
+term.onData(function(d){
+  if(ctrl&&d.length===1){
+    var c=d.toUpperCase().charCodeAt(0);
+    if(c>=64&&c<=95)d=String.fromCharCode(c-64);
+    ctrl=false;$('kc').className='';
+  }
+  send(d);
+});
+var K={esc:'\x1b',tab:'\t','^C':'\x03','^D':'\x04',up:'\x1b[A',down:'\x1b[B',right:'\x1b[C',left:'\x1b[D',home:'\x1b[H',end:'\x1b[F',pgup:'\x1b[5~',pgdn:'\x1b[6~'};
+Array.prototype.forEach.call(document.querySelectorAll('#keys button'),function(b){
+  b.addEventListener('pointerdown',function(e){
+    e.preventDefault();
+    var k=b.getAttribute('data-k');
+    if(k==='ctrl'){ctrl=!ctrl;b.className=ctrl?'on':'';term.focus();return}
+    send(K.hasOwnProperty(k)?K[k]:k);
+    term.focus();
+  });
+});
+function fs(d){var n=Math.max(9,Math.min(28,term.options.fontSize+d));term.options.fontSize=n;doFit()}
+$('fm').onclick=function(){fs(-1)};
+$('fp').onclick=function(){fs(1)};
+$('rc').onclick=connect;
+// pilih/salin teks: salinan isi terminal (termasuk riwayat) sebagai teks biasa yang bisa ditandai dengan tekan lama
+function bufText(){var b=term.buffer.active,out=[],i,l,nx,s;
+  for(i=0;i<b.length;i++){l=b.getLine(i);if(!l)continue;nx=b.getLine(i+1);s=l.translateToString(!(nx&&nx.isWrapped));
+    if(l.isWrapped&&out.length)out[out.length-1]+=s;else out.push(s)}
+  while(out.length&&!out[out.length-1].trim())out.pop();
+  return out.join('\n')}
+function copyText(t,done){
+  function ta(){var a=document.createElement('textarea');a.value=t;a.setAttribute('readonly','');a.style.cssText='position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;font-size:16px';document.body.appendChild(a);a.select();try{a.setSelectionRange(0,t.length)}catch(e){}var ok=false;try{ok=document.execCommand('copy')}catch(e){}document.body.removeChild(a);done(ok)}
+  if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(t).then(function(){done(true)},ta)}else ta()}
+var HINT='Tekan lama teks untuk memilih';
+function slFill(){var p=$('slt');p.style.fontSize=Math.max(11,term.options.fontSize-2)+'px';p.textContent=bufText()||'(kosong)';p.scrollTop=p.scrollHeight;$('slm').textContent=HINT}
+$('sl').onclick=function(){
+  if(term.hasSelection()){copyText(term.getSelection(),function(ok){st(ok?'Teks terpilih disalin':'Gagal menyalin')});return}
+  slFill();$('slx').classList.add('on')};
+$('slc').onclick=function(){$('slx').classList.remove('on');term.focus()};
+$('slr').onclick=slFill;
+var sv='';
+function slMsg(ok,s){$('slm').textContent=ok?(s?'Teks terpilih disalin':'Semua teks disalin'):'Gagal menyalin; tekan lama lalu pilih Salin'}
+function slExec(){var ok=false;try{ok=document.execCommand('copy')}catch(e){}return ok}
+$('sly').addEventListener('pointerdown',function(){var s=window.getSelection();sv=(s&&s.rangeCount&&$('slt').contains(s.anchorNode))?String(s):''});
+$('sly').onclick=function(){
+  var sel=window.getSelection(),p=$('slt'),cur=sel?String(sel):'',mine=!!(sel&&sel.rangeCount&&p.contains(sel.anchorNode)&&cur.trim()),s=mine?cur:sv;sv='';
+  if(mine&&slExec()){slMsg(true,1);return}
+  if(s.trim()){copyText(s,function(ok){slMsg(ok,1)});return}
+  var r=document.createRange();r.selectNodeContents(p);sel.removeAllRanges();sel.addRange(r);
+  var ok=slExec();sel.removeAllRanges();
+  if(ok)slMsg(true,0);else copyText(p.textContent,function(o){slMsg(o,0)})};
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&$('slx').classList.contains('on'))$('slc').onclick()});
+window.addEventListener('resize',vv);
+if(window.visualViewport)window.visualViewport.addEventListener('resize',vv);
+vv();connect();
+})();
+</script></body></html>

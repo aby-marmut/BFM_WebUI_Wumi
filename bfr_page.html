@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BFR</title>
+<style>
+:root{color-scheme:light;--bg:#f3f6fb;--card:#fff;--tx:#172338;--mu:#718096;--bd:#e3e9f2;--ac:#4263eb;--ac-soft:#edf1ff;--ok:#14966a;--bad:#d84b5b;--code:#f5f7fb;--shadow:0 8px 28px rgba(27,45,82,.07);--focus:0 0 0 3px rgba(66,99,235,.18)}
+:root:has(#theme-toggle:checked){color-scheme:dark;--bg:#0b1220;--card:#141e2e;--tx:#edf3ff;--mu:#9baac0;--bd:#29384e;--ac:#8ca7ff;--ac-soft:#202e4c;--ok:#55d6a0;--bad:#ff8994;--code:#0e1726;--shadow:0 10px 30px rgba(0,0,0,.2);--focus:0 0 0 3px rgba(140,167,255,.2)}
+*{box-sizing:border-box}
+html{min-height:100%;background:var(--bg);scrollbar-color:var(--bd) var(--bg)}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif;padding-bottom:88px}
+button,input,select,textarea{font:inherit}button{touch-action:manipulation}
+header{position:sticky;top:0;z-index:6;display:flex;align-items:center;gap:10px;padding:10px max(14px,calc((100vw - 940px)/2));background:color-mix(in srgb,var(--card) 97%,transparent);border-bottom:1px solid var(--bd);box-shadow:0 4px 18px rgba(20,35,65,.04)}
+header>b{font-size:19px;letter-spacing:-.045em}
+.header-details{display:flex;align-items:center;gap:10px;flex:1;min-width:0;transition:opacity .18s,transform .18s}
+header a{margin-left:auto;color:var(--ac);text-decoration:none;font-size:13px;font-weight:700;white-space:nowrap}
+#header-toggle,#theme-toggle{position:absolute;opacity:0;width:1px;height:1px}
+.header-toggle-btn{display:grid;place-items:center;width:36px;height:36px;flex:none;border:1px solid var(--bd);border-radius:12px;background:var(--bg);color:var(--tx);cursor:pointer}
+.header-toggle-btn svg{width:18px;height:18px;transition:transform .2s}
+#header-toggle:checked~.header-toggle-btn svg{transform:rotate(180deg)}
+#header-toggle:not(:checked)~.header-details{display:none}
+body:has(nav button:focus) #header-toggle:checked~.header-details{display:none}
+#header-toggle:focus-visible~.header-toggle-btn{outline:2px solid var(--ac);outline-offset:2px}
+.theme-btn{display:grid;place-items:center;width:38px;height:38px;border:1px solid var(--bd);border-radius:12px;background:var(--bg);color:var(--tx);cursor:pointer;flex:none}
+.theme-btn svg{width:19px;height:19px}.theme-btn .moon{display:none}
+:root:has(#theme-toggle:checked) .theme-btn .sun{display:none}:root:has(#theme-toggle:checked) .theme-btn .moon{display:block}
+#theme-toggle:focus-visible+.theme-btn{outline:2px solid var(--ac);outline-offset:2px}
+.pill{font-size:11px;font-weight:750;padding:5px 10px;border-radius:99px;border:1px solid var(--bd);color:var(--mu);white-space:nowrap}
+.pill.ok{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 48%,var(--bd));background:color-mix(in srgb,var(--ok) 9%,var(--card))}
+.pill.bad{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 48%,var(--bd));background:color-mix(in srgb,var(--bad) 8%,var(--card))}
+main{padding:20px 14px;max-width:940px;margin:0 auto}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;gap:4px;background:color-mix(in srgb,var(--card) 98%,transparent);border-top:1px solid var(--bd);z-index:5;padding:7px max(7px,calc((100vw - 700px)/2)) max(7px,env(safe-area-inset-bottom))}
+nav button{flex:1;border:0;border-radius:13px;background:none;color:var(--mu);padding:8px 3px;font:inherit;font-size:11px;font-weight:700;cursor:pointer;transition:background .15s,color .15s}
+nav button:before{display:block;font-size:19px;line-height:1.25;margin-bottom:3px}
+nav button[data-t=home]:before{content:"⌂"}nav button[data-t=config]:before{content:"▤"}nav button[data-t=apps]:before{content:"▦"}nav button[data-t=logs]:before{content:"≡"}nav button[data-t=settings]:before{content:"⚙"}
+nav button.on{color:var(--ac);background:var(--ac-soft)}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:18px;margin-bottom:14px;box-shadow:var(--shadow);min-width:0}
+.card h3{display:flex;align-items:center;gap:9px;margin:0 0 14px;font-size:11px;color:var(--mu);font-weight:800;text-transform:uppercase;letter-spacing:.09em}
+.card h3:before{content:"";width:4px;height:16px;background:var(--ac);border-radius:5px}
+.overview-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.overview-stat{min-width:0;padding:15px;border:1px solid var(--bd);border-radius:15px;background:color-mix(in srgb,var(--ac) 4%,var(--card))}
+.eyebrow{display:block;margin-bottom:7px;color:var(--mu);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.09em}
+.overview-stat .big{font-size:clamp(20px,5vw,27px)}.overview-stat .muted{margin-top:5px;overflow-wrap:anywhere}
+@media(max-width:420px){.overview-grid{grid-template-columns:1fr;gap:9px}.overview-stat{padding:12px}}
+.big{font-size:27px;font-weight:780;letter-spacing:-.04em;line-height:1.3;overflow-wrap:anywhere}
+.ok{color:var(--ok)}.bad{color:var(--bad)}.muted{color:var(--mu);font-size:13px}
+.row{display:flex;justify-content:space-between;gap:14px;padding:8px 0;border-bottom:1px solid color-mix(in srgb,var(--bd) 75%,transparent)}
+.row:last-child{border:0}.row span:first-child{color:var(--mu)}.row span:last-child{text-align:right;overflow-wrap:anywhere}
+button.b,a.b{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:12px;padding:9px 14px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;transition:transform .12s,border-color .12s,background .12s}
+button.b:active{transform:scale(.97)}button.b.p{background:var(--ac);border-color:var(--ac);color:#fff}
+button.b.d{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 55%,var(--bd))}
+button.b:disabled{opacity:.45;cursor:wait}
+button.icon-btn{width:44px;height:44px;min-width:44px;padding:0;border-radius:14px}
+button.icon-btn svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+button.icon-btn.p{background:var(--ok);border-color:var(--ok)}button.icon-btn.d{background:color-mix(in srgb,var(--bad) 9%,var(--card));color:var(--bad)}
+.bar{display:flex;gap:9px;flex-wrap:wrap;margin:0 0 14px;align-items:center}
+.chip{border:1px solid var(--bd);border-radius:99px;padding:8px 14px;background:var(--card);color:var(--tx);font:inherit;font-size:12px;font-weight:700;cursor:pointer}
+.chip.on{background:var(--ac-soft);border-color:var(--ac);color:var(--ac)}
+pre.log,textarea.ed,pre.out{background:var(--code);border:1px solid var(--bd);border-radius:13px;padding:13px;font:12px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;overflow:auto;white-space:pre-wrap;word-break:break-word;margin:0;color:var(--tx)}
+pre.log{max-height:60vh}pre.out{max-height:40vh;margin-top:10px}
+textarea.ed{width:100%;height:55vh;white-space:pre;word-break:normal;resize:vertical}
+input[type=text],select,textarea.sm{background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:11px;padding:10px 12px;font:inherit;min-width:0}
+input[type=text]:focus,select:focus,textarea:focus{outline:none;border-color:var(--ac);box-shadow:var(--focus)}
+textarea.sm{min-height:76px;font:13px ui-monospace,monospace;width:100%}
+.fld{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--bd)}
+.fld:last-child{border:0}.fld>span{flex:1;min-width:0}.fld small{display:block;color:var(--mu);font-size:11px;margin-top:3px}
+.fld.col{flex-direction:column;align-items:stretch}.fld.col>span{flex:none}
+.fld input[type=checkbox]{width:21px;height:21px;accent-color:var(--ac);flex:none}
+.fld select,.fld input[type=text]{width:48%}.fld.col select,.fld.col input[type=text]{width:100%}
+.list{background:var(--card);border:1px solid var(--bd);border-radius:15px;overflow:hidden}
+.list label,.list .it{display:flex;align-items:center;gap:10px;padding:13px;border-bottom:1px solid var(--bd);cursor:pointer}
+.list label:last-child,.list .it:last-child{border:0}.list small{color:var(--mu);margin-left:auto;font-size:11px;text-align:right}
+.list input{width:19px;height:19px;accent-color:var(--ac);flex:none}
+.it.sel{background:var(--ac-soft)}.it .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;overflow-wrap:anywhere}
+.badge{font-size:10px;font-weight:800;padding:3px 8px;border-radius:99px;background:var(--ok);color:#fff;margin-left:6px}
+#toast{position:fixed;left:50%;bottom:88px;transform:translateX(-50%);background:var(--tx);color:var(--card);padding:11px 16px;border-radius:13px;display:none;z-index:9;max-width:90%;font-size:13px;box-shadow:var(--shadow)}
+#toast.bad{background:var(--bad);color:#fff}
+.grp{margin:20px 3px 9px;color:var(--mu);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.09em}
+#picker{margin-top:0}
+@media(min-width:600px){main{padding:26px 20px}.card{padding:21px}.home-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.home-grid .card{margin-bottom:0}.home-grid .card:first-child{grid-column:span 2}}
+@media(max-width:380px){header{gap:7px;padding:9px}.header-details{gap:6px}header a{font-size:12px}main{padding:13px 10px}.card{padding:14px;border-radius:16px}.bar{gap:7px}button.b{padding:8px 10px}.row{gap:8px}}
+header{display:none!important}
+@media (prefers-color-scheme:dark){:root{color-scheme:dark;--bg:#0b1220;--card:#141e2e;--tx:#edf3ff;--mu:#9baac0;--bd:#29384e;--ac:#8ca7ff;--ac-soft:#202e4c;--ok:#55d6a0;--bad:#ff8994;--code:#0e1726;--shadow:0 10px 30px rgba(0,0,0,.2);--focus:0 0 0 3px rgba(140,167,255,.2)}}
+.i{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.act{display:flex;gap:8px;margin:0 0 14px;align-items:center}
+.ab{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:46px;padding:0 10px;border-radius:15px;border:1px solid var(--bd);background:var(--card);color:var(--tx);font:inherit;font-size:13px;font-weight:750;cursor:pointer;transition:transform .12s,background .12s}
+.ab:active{transform:scale(.96)}.ab:disabled{opacity:.45;cursor:wait}.ab .i{width:19px;height:19px}
+.ab.go{background:color-mix(in srgb,var(--ok) 13%,var(--card));color:var(--ok);border-color:color-mix(in srgb,var(--ok) 40%,var(--bd))}
+.ab.st{background:color-mix(in srgb,var(--bad) 11%,var(--card));color:var(--bad);border-color:color-mix(in srgb,var(--bad) 40%,var(--bd))}
+.ab.rs{background:var(--ac-soft);color:var(--ac);border-color:color-mix(in srgb,var(--ac) 38%,var(--bd))}
+.ab.pk{flex:none;width:46px;padding:0}
+.sthead{display:flex;align-items:center;gap:10px;margin-bottom:10px}.sthead .eyebrow{margin:0}
+.ico{display:grid;place-items:center;width:34px;height:34px;flex:none;border-radius:11px;background:var(--ac-soft);color:var(--ac)}
+.ico .i{width:19px;height:19px}
+.ico.ok{background:color-mix(in srgb,var(--ok) 14%,var(--card));color:var(--ok)}
+.ico.bad{background:color-mix(in srgb,var(--bad) 12%,var(--card));color:var(--bad)}
+.bar3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.bar3 .b{min-width:0;padding:8px 4px;gap:5px;font-size:12px;white-space:nowrap}
+.bar3 .b .i{width:16px;height:16px}
+.seg{display:flex;gap:4px;padding:4px;margin:0 0 12px;background:var(--bg);border:1px solid var(--bd);border-radius:14px}
+.seg button{flex:1;min-width:0;min-height:38px;border:0;border-radius:10px;background:none;color:var(--mu);font:inherit;font-size:11.5px;font-weight:750;cursor:pointer;padding:0 2px;white-space:nowrap}
+.seg button.on{background:var(--card);color:var(--ac);box-shadow:0 1px 6px rgba(20,35,65,.14)}
+.pdir{margin:0 0 10px;word-break:break-all;font-size:12px}
+.fxbar{display:flex;align-items:center;gap:8px;margin:0 0 10px;padding:6px 6px 6px 12px;border:1px solid var(--bd);border-radius:12px;background:var(--ac-soft)}
+.fxbar[hidden]{display:none}.fxbar b{flex:1;font-size:13px}
+.ovl{position:fixed;inset:0;z-index:8;display:flex;align-items:center;justify-content:center;padding:14px;background:rgba(8,14,26,.55)}
+.sheet{width:100%;max-width:520px;height:min(80dvh,620px);display:flex;flex-direction:column;gap:10px;padding:14px;background:var(--card);border:1px solid var(--bd);border-radius:22px;box-shadow:0 24px 70px rgba(0,0,0,.35)}
+.sheet .sh{display:flex;align-items:center;gap:10px}
+.sheet .sh b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:15px}
+.sheet .x{width:36px;height:36px;padding:0;border:1px solid var(--bd);border-radius:11px;background:var(--bg);color:var(--tx);display:grid;place-items:center;cursor:pointer}
+.fa{display:grid;grid-template-columns:repeat(auto-fit,minmax(62px,1fr));gap:8px}
+.fab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:56px;padding:6px 4px;border:1px solid var(--bd);border-radius:14px;background:var(--card);color:var(--tx);font:inherit;font-size:11px;font-weight:750;text-decoration:none;cursor:pointer}
+.fab .i{width:20px;height:20px}
+.fab.on{background:var(--ac-soft);border-color:var(--ac);color:var(--ac)}
+.fab.sv{background:var(--ac);border-color:var(--ac);color:#fff}
+.fab:disabled{opacity:.4;pointer-events:none}
+.fbody{flex:1;min-height:0;display:flex;flex-direction:column}
+.fbody pre.log,.fbody textarea.ed{flex:1;min-height:0;height:auto;max-height:none;overflow:auto;resize:none}
+.fhint{flex:1;display:grid;place-items:center;text-align:center;padding:0 12px}
+</style>
+</head>
+<body>
+<header><b>BFR</b><input id="header-toggle" type="checkbox" aria-label="Tampilkan info header"><label class="header-toggle-btn" for="header-toggle" title="Tampilkan/sembunyikan info header" aria-label="Tampilkan/sembunyikan info header"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></label><div class="header-details"><span id="stat" class="pill">…</span><a href="/">← WebUI</a><input id="theme-toggle" type="checkbox" aria-label="Tema gelap"><label class="theme-btn" for="theme-toggle" title="Ganti tema" aria-label="Ganti tema"><svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg><svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 13A8.5 8.5 0 0 1 11 3.2 8.7 8.7 0 1 0 20.8 13Z"/></svg></label></div></header>
+<main id="main"></main>
+<nav id="nav"></nav>
+<div id="toast"></div>
+<script>
+(function(){
+'use strict';
+var TABS=[['home','Home'],['config','Config'],['apps','Apps'],['logs','Logs'],['settings','Settings']];
+var cur='home',timer=null;
+function $(s){return document.querySelector(s)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function lsGet(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+var tt;function toast(m,bad){var t=$('#toast');t.textContent=m;t.className=bad?'bad':'';t.style.display='block';clearTimeout(tt);tt=setTimeout(function(){t.style.display='none'},bad?6000:2800)}
+function api(path,body){
+  var o={credentials:'same-origin',headers:{'X-Requested-With':'bfr'}};
+  if(body!==undefined){o.method='POST';o.headers['Content-Type']='application/json';o.body=JSON.stringify(body)}
+  return fetch(path,o).then(function(r){
+    if(r.status===401){location.href='/login';throw new Error('perlu login')}
+    return r.json().then(function(j){if(!r.ok)throw new Error(j.error||('HTTP '+r.status));return j},function(){throw new Error('balasan bukan JSON (HTTP '+r.status+')')});
+  });
+}
+function fail(e){toast(e.message||String(e),true)}
+function setStat(run){var s=$('#stat');s.textContent=run?'Running':'Stopped';s.className='pill '+(run?'ok':'bad')}
+function row(a,b){return '<div class="row"><span>'+esc(a)+'</span><span>'+esc(b||'-')+'</span></div>'}
+function busy(btn,on){if(btn)btn.disabled=on}
+function ic(p){return '<svg class="i" viewBox="0 0 24 24" aria-hidden="true">'+p+'</svg>'}
+var IC={
+ play:ic('<polygon points="6 3 20 12 6 21 6 3"/>'),
+ stop:ic('<rect x="5" y="5" width="14" height="14" rx="2"/>'),
+ rs:ic('<path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/>'),
+ grid:ic('<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>'),
+ power:ic('<path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/>'),
+ cpu:ic('<rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6" rx="1"/><path d="M15 2v2M15 20v2M2 15h2M2 9h2M20 15h2M20 9h2M9 2v2M9 20v2"/>'),
+ up:ic('<path d="M12 3v12"/><path d="m17 8-5-5-5 5"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>'),
+ dl:ic('<path d="M12 15V3"/><path d="m7 10 5 5 5-5"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>'),
+ sync:ic('<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/>'),
+ trash:ic('<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>'),
+ eye:ic('<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>'),
+ pen:ic('<path d="M4 20h4L19 9l-4-4L4 16z"/>'),
+ save:ic('<path d="M5 3h11l3 3v15H5zM8 3v5h7V3M8 21v-7h8v7"/>'),
+ check:ic('<path d="M20 6 9 17l-5-5"/>'),
+ x:ic('<path d="M18 6 6 18"/><path d="m6 6 12 12"/>')
+};
+
+function go(tab){
+  clearInterval(timer);timer=null;cur=tab;
+  Array.prototype.forEach.call(document.querySelectorAll('#nav button'),function(b){b.className=b.dataset.t===tab?'on':''});
+  ({home:vHome,config:vConfig,apps:vApps,logs:vLogs,settings:vSettings})[tab]();
+}
+$('#nav').innerHTML=TABS.map(function(t){return '<button data-t="'+t[0]+'">'+t[1]+'</button>'}).join('');
+$('#nav').addEventListener('click',function(e){if(e.target.dataset.t)go(e.target.dataset.t)});
+
+/* ---------- HOME ---------- */
+var CARDS=[['status','Service overview'],['net','Network mode'],['log','Recent logs'],['module','Module details']];
+function bfrSync(run,pid){
+  setStat(run);
+  var i=$('#bfrIco'),b=$('#bfrBig'),p=$('#bfrPid');
+  if(i)i.className='ico '+(run?'ok':'bad');
+  if(b){b.className='big '+(run?'ok':'bad');b.textContent=run?'Running':'Stopped'}
+  if(p)p.textContent='PID · '+(pid||'-');
+  document.querySelectorAll('button[data-a]').forEach(function(x){if(x.dataset.busy==='1')return;x.disabled=x.dataset.a==='start'?!!run:!run});
+}
+var bfrAct='';
+function bfrBusyUI(t){
+  var s=$('#stat');if(s){s.textContent=t;s.className='pill'}
+  var i=$('#bfrIco'),b=$('#bfrBig');
+  if(i)i.className='ico';
+  if(b){b.className='big';b.textContent=t}
+}
+function bfrPoll(){
+  if(document.hidden||cur!=='home'||bfrAct)return;
+  api('/api/bfr/home').then(function(d){
+    if(cur!=='home')return;
+    bfrSync(d.running,d.pid);
+    var l=$('#bfrLog');if(l&&d.log!=null)l.textContent=d.log||'(kosong)';
+  }).catch(function(){});
+}
+function vHome(){
+  var m=$('#main');m.innerHTML='<div class="muted">Memuat…</div>';
+  api('/api/bfr/home').then(function(d){
+    setStat(d.running);
+    var hide=lsGet('bfr.hide',{}),md=d.module||{};
+    var C={
+      status:'<div class="overview-grid"><section class="overview-stat"><div class="sthead"><span id="bfrIco" class="ico '+(d.running?'ok':'bad')+'">'+IC.power+'</span><span class="eyebrow">Service status</span></div><div id="bfrBig" class="big '+(d.running?'ok':'bad')+'">'+(d.running?'Running':'Stopped')+'</div><div id="bfrPid" class="muted">PID · '+esc(d.pid||'-')+'</div></section><section class="overview-stat"><div class="sthead"><span class="ico">'+IC.cpu+'</span><span class="eyebrow">Core</span></div><div class="big">'+esc(d.core||'-')+'</div><div class="muted">Config · '+esc(d.config||'-')+'</div></section></div>',
+      net:row('Mode',d.mode)+row('tproxy',d.tproxy)+row('redirect',d.redir)+row('IPv6',d.ipv6),
+      log:'<pre id="bfrLog" class="log" style="max-height:200px">'+esc(d.log||'(kosong)')+'</pre>',
+      module:row('Nama',md.name)+row('Versi',md.version)+row('Penulis',md.author)
+    };
+    var h='<div class="act action-bar"><button class="ab go" data-a="start" aria-label="Start" title="Start">'+IC.play+'<span>Start</span></button><button class="ab st" data-a="stop" aria-label="Stop" title="Stop">'+IC.stop+'<span>Stop</span></button><button class="ab rs" data-a="restart" aria-label="Restart" title="Restart">'+IC.rs+'<span>Restart</span></button><button class="ab pk" id="pick" aria-label="Pengaturan kartu" title="Pengaturan kartu">'+IC.grid+'</button></div><div id="picker" class="card" style="display:none"><h3>▦ Kartu yang ditampilkan</h3>';
+    CARDS.forEach(function(c){h+='<label class="fld"><span>'+c[1]+'</span><input type="checkbox" data-c="'+c[0]+'"'+(hide[c[0]]?'':' checked')+'></label>'});
+    h+='</div><div id="cards">';
+    CARDS.forEach(function(c){if(!hide[c[0]])h+='<div class="card"><h3>'+c[1]+'</h3>'+C[c[0]]+'</div>'});
+    h+='</div><pre class="out" id="out" style="display:none"></pre>';
+    m.innerHTML=h;
+    $('#pick').onclick=function(){var p=$('#picker');p.style.display=p.style.display==='none'?'block':'none'};
+    $('#picker').onchange=function(e){var k=e.target.dataset.c;if(!k)return;var x=lsGet('bfr.hide',{});if(e.target.checked)delete x[k];else x[k]=1;lsSet('bfr.hide',x);vHome()};
+    var bfrBs=m.querySelectorAll('button[data-a]');
+    function bfrLock(on){bfrBs.forEach(function(x){x.dataset.busy=on?'1':'';if(on)x.disabled=true})}
+    bfrBs.forEach(function(b){b.onclick=function(){
+      var a=b.dataset.a;if(!confirm('Jalankan "'+a+'" pada layanan box? Note 8 adalah gateway; jaringan bisa terputus sebentar.'))return;
+      bfrAct=a;bfrBusyUI(a==='restart'?'Restarting…':a==='start'?'Starting…':'Stopping…');bfrLock(true);toast(a+'… menunggu layanan');
+      api('/api/bfr/ctl?a='+a,{}).then(function(r){bfrAct='';bfrLock(false);bfrSync(r.running,r.pid);var o=$('#out');if(o){o.style.display='block';o.textContent=r.output||'(tanpa keluaran)'}toast(r.settled?a+' selesai':a+' selesai, status belum sesuai: dicek ulang otomatis',!r.settled);bfrPoll()}).catch(function(e){bfrAct='';bfrLock(false);bfrPoll();fail(e)});
+    }});
+    bfrSync(d.running,d.pid);
+    clearInterval(timer);timer=setInterval(bfrPoll,4000);
+  }).catch(fail);
+}
+
+/* ---------- LOGS ---------- */
+function vLogs(){
+  var m=$('#main'),n=lsGet('bfr.n',500),name=null,auto=false;
+  m.innerHTML='<div class="muted">Memuat…</div>';
+  api('/api/bfr/logs').then(function(d){
+    if(!d.logs.length){m.innerHTML='<div class="card muted">Tidak ada berkas .log di folder run.</div>';return}
+    name=d.logs[0].name;
+    m.innerHTML='<div class="bar"><select id="ls" style="width:auto">'+d.logs.map(function(l){return '<option>'+esc(l.name)+'</option>'}).join('')+'</select><button class="chip" data-n="500">500</button><button class="chip" data-n="1000">1000</button><label class="muted"><input type="checkbox" id="au"> otomatis</label><button class="b" id="rf" style="margin-left:auto">Muat ulang</button></div><pre class="log" id="lg">…</pre>';
+    var sel=$('#ls');
+    function chips(){m.querySelectorAll('.chip').forEach(function(c){c.className='chip'+(+c.dataset.n===n?' on':'')})}
+    function load(){
+      api('/api/bfr/log?name='+encodeURIComponent(name)+'&n='+n).then(function(r){var p=$('#lg');if(!p)return;var atEnd=p.scrollTop+p.clientHeight>=p.scrollHeight-30;p.textContent=r.text||'(kosong)';if(atEnd||p.dataset.f!=='1'){p.scrollTop=p.scrollHeight;p.dataset.f='1'}}).catch(fail);
+    }
+    sel.onchange=function(){name=sel.value;$('#lg').dataset.f='';load()};
+    m.querySelectorAll('.chip').forEach(function(c){c.onclick=function(){n=+c.dataset.n;lsSet('bfr.n',n);chips();load()}});
+    $('#rf').onclick=load;
+    $('#au').onchange=function(e){clearInterval(timer);timer=null;if(e.target.checked)timer=setInterval(load,3000)};
+    chips();load();
+  }).catch(fail);
+}
+
+/* ---------- CONFIG ---------- */
+var SEG=[['clash','clash'],['proxy_provider','proxy provider'],['rule_provider','rule provider']];
+function upl(url,fd){
+  return fetch(url,{method:'POST',credentials:'same-origin',headers:{'X-Requested-With':'bfr'},body:fd}).then(function(r){
+    if(r.status===401){location.href='/login';throw new Error('perlu login')}
+    return r.json().then(function(j){if(!r.ok)throw new Error(j.error||('HTTP '+r.status));return j},function(){throw new Error('balasan bukan JSON (HTTP '+r.status+')')});
+  });
+}
+function sizeTxt(n){return n>=1048576?(n/1048576).toFixed(1)+' MB':Math.max(1,Math.ceil(n/1024))+' KB'}
+function vConfig(){
+  var m=$('#main'),seg='clash';m.innerHTML='<div class="muted">Memuat…</div>';
+  api('/api/bfr/config/list').then(function(d){
+    var h='<div class="card"><h3>Update subscription</h3><div class="bar bar3"><button class="b" id="subs">'+IC.sync+'<span>Update</span></button><a class="b" id="bkp" href="/api/bfr/cfg/backup">'+IC.dl+'<span>Backup cfg</span></a><button class="b" id="rsb">'+IC.up+'<span>Restore cfg</span></button><input type="file" id="rsf" accept=".gz,.tgz,application/gzip,application/x-gzip" hidden></div><pre class="out" id="out" style="display:none"></pre><div class="seg" id="seg">';
+    SEG.forEach(function(x,i){h+='<button data-s="'+x[0]+'"'+(i?'':' class="on"')+'>'+x[1]+'</button>'});
+    h+='</div><div id="pv"></div></div>';
+    var g='';
+    d.files.forEach(function(f){
+      if(f.group==='Clash')return;
+      if(f.group!==g){g=f.group;h+='<div class="grp">'+esc(g)+'</div>'}
+      h+='<div class="list" style="margin-bottom:6px"><div class="it" data-p="'+esc(f.path)+'"><span class="t">'+esc(f.name)+(f.active?'<span class="badge">aktif</span>':'')+'</span><small>'+Math.ceil(f.size/1024)+' KB</small></div></div>';
+    });
+    m.innerHTML=h;
+    $('#subs').onclick=function(){var b=this;if(!confirm('Jalankan box.tool subs (unduh/ubah subscription)?'))return;busy(b,true);api('/api/bfr/tool?a=subs',{}).then(function(r){var o=$('#out');o.style.display='block';o.textContent=r.output||'(tanpa keluaran)';if(r.error_exec)toast(r.error_exec,true);pList(seg)}).catch(fail).then(function(){busy(b,false)})};
+    $('#seg').onclick=function(e){var k=e.target.dataset.s;if(!k)return;seg=k;Array.prototype.forEach.call(this.querySelectorAll('button'),function(x){x.className=x.dataset.s===k?'on':''});pList(k)};
+    $('#rsb').onclick=function(){$('#rsf').click()};
+    $('#rsf').onchange=function(){
+      var f=this.files[0];this.value='';if(!f)return;
+      if(!confirm('Pulihkan cfg dari "'+f.name+'"?\n\nBerkas dengan nama sama akan ditimpa (cadangan otomatis dibuat dulu). Berkas lain tidak dihapus. Layanan tidak di-restart otomatis.'))return;
+      var fd=new FormData();fd.append('file',f,f.name);var b=$('#rsb');busy(b,true);toast('Memulihkan…');
+      upl('/api/bfr/cfg/restore',fd).then(function(r){toast('Dipulihkan '+r.restored+' berkas. Restart layanan agar berlaku.');pList(seg)}).catch(fail).then(function(){busy(b,false)});
+    };
+    m.onclick=function(e){var it=e.target.closest('.it[data-p]');if(it)edit(it.dataset.p,d.files)};
+    pList('clash');
+  }).catch(fail);
+}
+function pList(key){
+  var box=$('#pv');if(!box)return;var tk=pList.t=(pList.t||0)+1;if(box.firstChild)box.style.opacity='.45';else box.innerHTML='<div class="muted">Memuat…</div>';
+  api('/api/bfr/prov/list?d='+key).then(function(d){
+    if(tk!==pList.t||!document.body.contains(box))return;box.style.opacity='';
+    var sel={},arm=0,at;
+    var h='<div class="muted pdir">'+esc(d.dir)+(d.exists?'':' · folder belum ada (dibuat saat unggah)')+'</div>'
+      +'<div class="bar"><button class="b" id="pup">'+IC.up+'<span>Unggah</span></button><input type="file" id="puf" multiple hidden></div>'
+      +'<div class="fxbar" id="pbar" hidden><b id="pn"></b><button class="b" id="pdel">'+IC.trash+'<span>Hapus</span></button></div>';
+    if(!d.files.length)h+='<div class="muted" style="padding:6px 2px">Kosong.</div>';
+    else h+='<div class="list" id="pl">'+d.files.map(function(f){return '<div class="it" data-n="'+esc(f.name)+'"><input type="checkbox" data-c="'+esc(f.name)+'" aria-label="Pilih '+esc(f.name)+'"><span class="t">'+esc(f.name)+(f.active?'<span class="badge">aktif</span>':'')+'</span><small>'+sizeTxt(f.size)+'</small></div>'}).join('')+'</div>';
+    box.innerHTML=h;
+    function rst(){arm=0;clearTimeout(at);var b=$('#pdel');if(!b)return;b.classList.remove('d');b.querySelector('span').textContent='Hapus'}
+    function bar(){var n=Object.keys(sel).length;$('#pbar').hidden=!n;$('#pn').textContent=n+' dipilih';rst()}
+    var pl=$('#pl');
+    if(pl){
+      pl.onchange=function(e){var c=e.target.dataset.c;if(c==null)return;if(e.target.checked)sel[c]=1;else delete sel[c];e.target.closest('.it').className='it'+(sel[c]?' sel':'');bar()};
+      pl.onclick=function(e){if(e.target.type==='checkbox')return;var it=e.target.closest('.it');if(!it)return;var f=d.files.filter(function(x){return x.name===it.dataset.n})[0];if(f)pdlg(key,f,function(){pList(key)})};
+    }
+    $('#pdel').onclick=function(){
+      var b=this;
+      if(!arm){arm=1;b.classList.add('d');b.querySelector('span').textContent='Ketuk lagi';at=setTimeout(rst,3000);return}
+      rst();busy(b,true);
+      api('/api/bfr/prov/delete',{d:key,names:Object.keys(sel)}).then(function(r){
+        if(r.err&&r.err.length)toast(r.err.join(' · '),true);else toast('Terhapus '+r.ok+'. Cadangan ada di webui-backups.');
+        pList(key);
+      }).catch(function(e){fail(e);busy(b,false)});
+    };
+    $('#pup').onclick=function(){$('#puf').click()};
+    $('#puf').onchange=function(){
+      var fl=this.files;if(!fl.length)return;
+      var fd=new FormData();for(var i=0;i<fl.length;i++)fd.append('file',fl[i],fl[i].name);
+      this.value='';var b=$('#pup');busy(b,true);toast('Mengunggah…');
+      upl('/api/bfr/prov/upload?d='+key,fd).then(function(r){
+        var bad=!!(r.err&&r.err.length),t='Terunggah '+r.ok;
+        if(r.replaced&&r.replaced.length)t+=' (ganti '+r.replaced.length+', cadangan dibuat)';
+        toast(t+(bad?' · '+r.err.join(' · '):''),bad);pList(key);
+      }).catch(function(e){fail(e);busy(b,false)});
+    };
+  }).catch(function(e){if(tk===pList.t)box.style.opacity='';fail(e)});
+}
+function pdlg(key,f,after){
+  var ov=document.createElement('div');ov.className='ovl';
+  var act=key==='clash',dirty=0,mt=f.mtime;
+  ov.innerHTML='<div class="sheet" role="dialog" aria-modal="true"><div class="sh"><b>'+esc(f.name)+(f.active?'<span class="badge">aktif</span>':'')+'</b><button class="x" data-k="x" aria-label="Tutup">'+IC.x+'</button></div>'
+    +'<div class="muted">'+sizeTxt(f.size)+' · '+esc(new Date(f.mtime*1000).toLocaleString())+'</div>'
+    +'<div class="fa"><button class="fab" data-k="v"'+(f.edit?'':' disabled')+'>'+IC.eye+'<span>Lihat teks</span></button><button class="fab" data-k="e"'+(f.edit?'':' disabled')+'>'+IC.pen+'<span>Edit teks</span></button><a class="fab" data-k="d" href="/api/bfr/prov/get?d='+key+'&amp;n='+encodeURIComponent(f.name)+'">'+IC.dl+'<span>Unduh</span></a><button class="fab sv" data-k="s" disabled>'+IC.save+'<span>Simpan</span></button>'+(act?'<button class="fab" data-k="a"'+(f.active?' disabled':'')+'>'+IC.check+'<span>Aktifkan</span></button>':'')+'</div>'
+    +'<div class="fbody" data-k="b"><div class="muted fhint">'+(f.edit?'Pilih Lihat teks atau Edit teks.':'Berkas lebih dari 32 MB, gunakan Unduh.')+'</div></div></div>';
+  function q(k){return ov.querySelector('[data-k="'+k+'"]')}
+  function close(){if(ov.parentNode)ov.parentNode.removeChild(ov)}
+  function tryClose(){if(dirty&&!confirm('Buang perubahan yang belum disimpan?'))return;close()}
+  function mode(k){q('v').classList.toggle('on',k==='v');q('e').classList.toggle('on',k==='e');q('s').disabled=(k!=='e');if(k!=='e')dirty=0}
+  function load(){return api('/api/bfr/prov/text?d='+key+'&n='+encodeURIComponent(f.name))}
+  document.body.appendChild(ov);
+  q('x').onclick=tryClose;
+  ov.onclick=function(e){if(e.target===ov&&!dirty)close()};
+  q('v').onclick=function(){load().then(function(r){mt=r.mtime;var b=q('b');b.innerHTML='<pre class="log"></pre>';b.firstChild.textContent=r.text;mode('v')}).catch(fail)};
+  q('e').onclick=function(){
+    if(q('b').querySelector('textarea'))return;
+    load().then(function(r){mt=r.mtime;var b=q('b');b.innerHTML='<textarea class="ed" spellcheck="false"></textarea>';var ta=b.firstChild;ta.value=r.text;ta.oninput=function(){dirty=1};mode('e');ta.focus()}).catch(fail);
+  };
+  q('s').onclick=function(){
+    var ta=q('b').querySelector('textarea');if(!ta)return;var b=this;busy(b,true);
+    api('/api/bfr/prov/save',{d:key,n:f.name,text:ta.value,mtime:mt}).then(function(){dirty=0;toast('Tersimpan, cadangan dibuat. Restart layanan agar berlaku.');close();after()}).catch(fail).then(function(){busy(b,false)});
+  };
+  if(act)q('a').onclick=function(){
+    var b=this;
+    if(!confirm('Jadikan "'+f.name+'" config aktif?\n\nOK = simpan lalu restart layanan (rollback otomatis bila gagal).\nBatal = tidak melakukan apa-apa.'))return;
+    busy(b,true);
+    api('/api/bfr/config/active',{name:f.name,restart:true}).then(function(x){
+      if(x.rolled_back)toast('Layanan gagal naik; settings.ini dikembalikan.',true);else toast('Config aktif diganti; layanan '+(x.running?'Running':'Stopped'),!x.running);
+      close();after();
+    }).catch(function(e){fail(e);busy(b,false)});
+  };
+}
+function edit(path,files){
+  var f=files.filter(function(x){return x.path===path})[0],m=$('#main');
+  m.innerHTML='<div class="muted">Membuka…</div>';
+  api('/api/bfr/config/get?path='+encodeURIComponent(path)).then(function(r){
+    var risky=f.group==='Pengaturan modul'&&f.name==='settings.ini';
+    m.innerHTML='<div class="bar"><button class="b" id="bk">← Daftar</button><b>'+esc(f.name)+'</b></div>'+(risky?'<div class="card muted">Ini skrip shell. Perubahan divalidasi dengan <code>sh -n</code> dan dicadangkan; untuk nilai umum lebih aman lewat tab Settings.</div>':'')+'<textarea class="ed" id="ed" spellcheck="false"></textarea><div class="bar" style="margin-top:10px"><button class="b p" id="sv">Simpan</button>'+(f.main?'<button class="b" id="ac">Jadikan aktif</button>':'')+'</div>';
+    $('#ed').value=r.content;
+    $('#bk').onclick=vConfig;
+    $('#sv').onclick=function(){var b=this;busy(b,true);api('/api/bfr/config/save',{path:path,content:$('#ed').value}).then(function(x){toast('Tersimpan. Cadangan: '+x.backup+'. Restart layanan agar berlaku.')}).catch(fail).then(function(){busy(b,false)})};
+    if(f.main)$('#ac').onclick=function(){var b=this;var rs=confirm('Jadikan "'+f.name+'" config aktif?\n\nOK = simpan lalu restart layanan (rollback otomatis bila gagal).\nBatal = tidak melakukan apa-apa.');if(!rs)return;busy(b,true);api('/api/bfr/config/active',{name:f.name,restart:true}).then(function(x){if(x.rolled_back)toast('Layanan gagal naik; settings.ini dikembalikan.',true);else toast('Config aktif diganti; layanan '+(x.running?'Running':'Stopped'),!x.running)}).catch(fail).then(function(){busy(b,false)})};
+  }).catch(function(e){fail(e);vConfig()});
+}
+
+/* ---------- APPS ---------- */
+function vApps(){
+  var m=$('#main');m.innerHTML='<div class="muted">Memuat daftar aplikasi…</div>';
+  api('/api/bfr/apps').then(function(d){
+    var apps=d.apps,mode=d.mode,filt='all',q='';
+    var sel={};apps.forEach(function(a){if(a.selected)sel[a.name]=1});
+    m.innerHTML='<div class="bar"><button class="chip on" data-f="all">All</button><button class="chip" data-f="system">System</button><button class="chip" data-f="user">User</button><select id="md" style="width:auto"><option value="blacklist">blacklist</option><option value="whitelist">whitelist</option></select></div>'+
+    '<div class="bar"><input type="text" id="q" placeholder="Cari paket…" style="flex:1"><button class="b" id="sa">Semua</button><button class="b" id="sn">Kosong</button><button class="b" id="si">Balik</button></div>'+
+    '<div class="muted" id="cnt" style="margin-bottom:8px"></div><div class="list" id="ls"></div>'+
+    '<div class="bar" style="margin-top:12px"><button class="b p" id="sv">Simpan</button><button class="b" id="sr">Simpan + restart</button></div><div class="muted">blacklist: aplikasi terpilih TIDAK diproksikan. whitelist: hanya yang terpilih diproksikan. Perubahan berlaku setelah layanan di-restart.</div>';
+    $('#md').value=mode;
+    function vis(){return apps.filter(function(a){return(filt==='all'||(filt==='system')===a.system)&&(!q||a.name.toLowerCase().indexOf(q)>=0)})}
+    function draw(){
+      var v=vis();
+      $('#ls').innerHTML=v.map(function(a){return '<label class="it'+(sel[a.name]?' sel':'')+'"><input type="checkbox" data-n="'+esc(a.name)+'"'+(sel[a.name]?' checked':'')+'><span class="t">'+esc(a.name)+'</span><small>'+(a.installed?(a.system?'system':'user'):'tidak terpasang')+'</small></label>'}).join('')||'<div class="it muted">Tidak ada.</div>';
+      $('#cnt').textContent=Object.keys(sel).length+' terpilih · '+v.length+' ditampilkan';
+    }
+    m.querySelectorAll('.chip').forEach(function(c){c.onclick=function(){filt=c.dataset.f;m.querySelectorAll('.chip').forEach(function(x){x.className='chip'+(x===c?' on':'')});draw()}});
+    $('#q').oninput=function(){q=this.value.trim().toLowerCase();draw()};
+    $('#ls').onchange=function(e){var n=e.target.dataset.n;if(!n)return;if(e.target.checked)sel[n]=1;else delete sel[n];e.target.closest('.it').className='it'+(sel[n]?' sel':'');$('#cnt').textContent=Object.keys(sel).length+' terpilih · '+vis().length+' ditampilkan'};
+    $('#sa').onclick=function(){vis().forEach(function(a){sel[a.name]=1});draw()};
+    $('#sn').onclick=function(){vis().forEach(function(a){delete sel[a.name]});draw()};
+    $('#si').onclick=function(){vis().forEach(function(a){if(sel[a.name])delete sel[a.name];else sel[a.name]=1});draw()};
+    function save(rs,btn){
+      if(rs&&!confirm('Simpan lalu restart layanan? Jaringan bisa terputus sebentar.'))return;
+      busy(btn,true);api('/api/bfr/apps/save',{mode:$('#md').value,packages:Object.keys(sel),restart:rs}).then(function(r){toast('Tersimpan ('+r.count+' paket)'+(rs?'; layanan '+(r.running?'Running':'Stopped'):''),rs&&!r.running)}).catch(fail).then(function(){busy(btn,false)});
+    }
+    $('#sv').onclick=function(){save(false,this)};
+    $('#sr').onclick=function(){save(true,this)};
+    draw();
+  }).catch(fail);
+}
+
+/* ---------- SETTINGS ---------- */
+function vSettings(){
+  var m=$('#main');m.innerHTML='<div class="muted">Memuat…</div>';
+  api('/api/bfr/settings').then(function(d){
+    var orig={},h='',g='';
+    function norm(f,el){
+      if(f.kind==='bool')return el.checked?'true':'false';
+      if(f.kind==='list')return el.value.split('\n').map(function(s){return s.trim()}).filter(Boolean);
+      return el.value.trim();
+    }
+    d.fields.forEach(function(f){
+      if(f.group!==g){if(g)h+='</div>';g=f.group;h+='<div class="grp">'+esc(g)+'</div><div class="card">'}
+      var id='f_'+f.key,dis=f.editable?'':' disabled',lab='<span>'+esc(f.label)+'<small>'+esc(f.key)+(f.editable?'':' · baris logika, tidak bisa diedit')+'</small></span>';
+      if(f.kind==='bool')h+='<label class="fld">'+lab+'<input type="checkbox" id="'+id+'"'+(f.value==='true'?' checked':'')+dis+'></label>';
+      else if(f.kind==='enum')h+='<label class="fld">'+lab+'<select id="'+id+'"'+dis+'>'+f.opts.map(function(o){return '<option'+(o===f.value?' selected':'')+'>'+esc(o)+'</option>'}).join('')+'</select></label>';
+      else if(f.kind==='list')h+='<label class="fld col">'+lab+'<textarea class="sm" id="'+id+'"'+dis+'>'+esc((f.list||[]).join('\n'))+'</textarea></label>';
+      else h+='<label class="fld'+(f.kind==='text'?' col':'')+'">'+lab+'<input type="text" id="'+id+'" value="'+esc(f.value)+'"'+dis+'></label>';
+    });
+    if(g)h+='</div>';
+    var md=d.module||{};
+    h='<div class="card"><label class="fld"><span>Restart layanan setelah simpan<small>rollback otomatis ke cadangan bila layanan gagal naik</small></span><input type="checkbox" id="rs" checked></label><div class="bar" style="margin:10px 0 0"><button class="b p" id="sv">Simpan pengaturan</button></div></div><pre class="out" id="out" style="display:none"></pre>'+h+
+      '<div class="grp">Tentang modul</div><div class="card">'+row('Nama',md.name)+row('Versi',md.version)+row('Penulis',md.author)+'<div class="bar" style="margin:12px 0 0"><button class="b" data-t="upkernel">Cek update core</button><button class="b" data-t="upxui">Cek update Web UI</button></div></div>';
+    m.innerHTML=h;
+    d.fields.forEach(function(f){var el=$('#f_'+f.key);if(el&&f.editable)orig[f.key]=JSON.stringify(norm(f,el))});
+    $('#sv').onclick=function(){
+      var ch={};d.fields.forEach(function(f){var el=$('#f_'+f.key);if(!el||!f.editable)return;var v=norm(f,el);if(JSON.stringify(v)!==orig[f.key])ch[f.key]=v});
+      if(!Object.keys(ch).length){toast('Tidak ada perubahan');return}
+      var rs=$('#rs').checked;
+      if(!confirm('Simpan '+Object.keys(ch).length+' perubahan ('+Object.keys(ch).join(', ')+')'+(rs?' lalu restart layanan?\nJaringan bisa terputus beberapa detik.':'?')))return;
+      var b=this;busy(b,true);
+      api('/api/bfr/settings',{changes:ch,restart:rs}).then(function(r){
+        var o=$('#out');if(r.output){o.style.display='block';o.textContent=r.output}
+        if(r.rolled_back)toast('Layanan gagal naik; settings.ini dikembalikan ke cadangan.',true);
+        else toast('Tersimpan'+(r.restarted?'; layanan '+(r.running?'Running':'Stopped'):'. Restart agar berlaku.'),r.restarted&&!r.running);
+        if(!r.rolled_back)setTimeout(vSettings,r.restarted?500:0);
+      }).catch(fail).then(function(){busy(b,false)});
+    };
+    m.querySelectorAll('button[data-t]').forEach(function(b){b.onclick=function(){
+      var t=b.dataset.t;if(!confirm('Jalankan box.tool '+t+'? Proses ini bisa mengunduh berkas dan memakan waktu beberapa menit.'))return;
+      busy(b,true);api('/api/bfr/tool?a='+t,{}).then(function(r){var o=$('#out');o.style.display='block';o.textContent=r.output||'(tanpa keluaran)';o.scrollIntoView();if(r.error_exec)toast(r.error_exec,true)}).catch(fail).then(function(){busy(b,false)});
+    }});
+  }).catch(fail);
+}
+
+api('/api/bfr/home').then(function(d){setStat(d.running)}).catch(function(){});
+go('home');
+})();
+</script>
+</body>
+</html>
