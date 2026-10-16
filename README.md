@@ -32,7 +32,7 @@ Wumi is developed primarily for my own setup, but the source is available for an
 | Section | What it does |
 | --- | --- |
 | 📊 **Status** | Network topology, IP addresses, traffic, latency, speed tests, and vnStat statistics. |
-| 📦 **BFR** | Manage Box for Root, view logs, update subscriptions, and open the MetaCubeXD dashboard. |
+| 📦 **BFR** | Manage Box for Root, Backup & Restore Config, view logs, update subscriptions, include MetaCubeXD dashboard. |
 | 📁 **Files** | Browse and manage files in No Root or Root mode, change permissions, copy and move files, edit text, and handle archives. |
 | 🎛️ **Control** | Apply TTL settings, persist TTL across reboots, change the admin password, reboot, enter recovery, and shut down the device. |
 | 🪞 **Mirror** | Mirror the device screen through AndroModem. |
@@ -47,80 +47,58 @@ Before installing Wumi, make sure your device has:
 - Box for Root installed at `/data/adb/box`.
 - TCP debugging (`adbd`) enabled for the Mirror feature.
 
-**Box for Root is required.** The module installation is designed to stop if `/data/adb/box` is missing.
+**Box for Root wajib tersedia. Pemasangan modul akan ditolak jika direktori /data/adb/box tidak ditemukan..
 
-The Mirror feature also requires TCP debugging to be available. Other features may work without Mirror, provided their individual requirements are met.
+Fitur Mirror memerlukan ADB melalui TCP. Fitur lainnya dapat digunakan tanpa Mirror selama kebutuhan masing-masing terpenuhi.
 
-## 🚀 Installation
 
-### 1. Install the module
+## 🚀 Installasi
 
-Flash the Wumi module ZIP through Magisk, then reboot the device.
+### 1. Install modul
 
-### 2. Set the admin password
+Flash ZIP modul Wumi melalui Magisk seperti biasa, kemudian reboot.
+Pemasangan akan gagal otomatis jika menggunakan ARM32.
+Setelah reboot untuk masuk wumi perlu setting password sendiri.
 
-On the device, open a root shell and run:
+### 2. Jika Lupa admin password
+
+Buka termux : shell > su 
+Lalu paste ini untuk memasukan password baru.
 
 ```sh
 printf %s 'YOUR_PASSWORD' | /data/adb/wumi/wumi -set-password
 ```
 
-Replace `YOUR_PASSWORD` with your chosen password.
+Ganti `YOUR_PASSWORD` dengan password barumu.
 
-**Keep your password private.** Avoid sharing the command with the actual password in screenshots, logs, or public posts.
 
-### 3. Open the web interface
-
-From another device connected to the same private network, open:
+### 3. Buka antarmuka Wumi
 
 ```text
 http://<DEVICE-IP>:8080
+
+http://127.0.0.1:8080
 ```
 
-Log in with:
-
-- **Username:** `admin`
-- **Password:** The password you configured above.
-
+Masuk menggunakan:
+Username: admin
+Sandi: sandi yang telah dibuat sebelumnya.
 Replace `<DEVICE-IP>` with the Android device's reachable IP address.
 
-## 🔐 Security
+## 🔐 Keamanan
 
-Wumi includes several protections for its web interface:
+Perlindungan Wumi pada antarmuka web:
+- Sandi disimpan menggunakan PBKDF2-SHA256.
+- Login dibatasi hingga lima percobaan gagal per alamat IP dalam sepuluh menit.
+- Cookie sesi menggunakan atribut HttpOnly.
+- Permintaan dibatasi untuk loopback dan jaringan privat.
+- Modul memasang aturan iptables untuk memblokir port 5555, 8080, 8081, dan 49153 pada antarmuka seluler.
 
-- Passwords are stored using **PBKDF2-SHA256**.
-- Login attempts are rate-limited to five failed attempts per IP address within ten minutes.
-- Session cookies use the `HttpOnly` attribute.
-- Requests are restricted to loopback and private networks.
-- The module installs iptables rules to block ports `5555`, `8080`, `8081`, and `49153` on cellular interfaces.
-
-### ⚠️ Important: ADB over TCP
-
-The `adbd` TCP service on port `5555` may be exposed without authentication, depending on the module providing it.
-
-Wumi relies on its iptables rules to block the listed ports on cellular interfaces. **Do not disable the Wumi module without first arranging an alternative firewall rule for the services it protects.**
-
-These rules are not a substitute for checking your network configuration. Keep administrative access restricted to networks you trust, and do not assume that a private-network restriction makes an exposed service safe.
-
-## 📱 Tested Device
-
-Wumi has been tested on the following setup:
-
-| Component | Configuration |
-| --- | --- |
-| Device | Samsung Galaxy Note 8 (SM-N950F) |
-| Android | LineageOS 20 / Android 13 |
-| Root | Magisk |
-| Architecture | ARM64 |
-
-Other devices have not been verified yet. Compatibility may depend on the Android build, root environment, available utilities, and network configuration.
-
-If you try Wumi on another device, feedback about what works and what doesn't is welcome.
+### ⚠️ Wajib menggunakan auto enabler
 
 ## 🛠️ Build from Source
 
 Wumi uses the Go standard library for its backend.
-
 To build the ARM64 binary, run:
 
 ```sh
