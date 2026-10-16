@@ -28,7 +28,7 @@ Wumi berjalan langsung di Android sebagai satu biner Go, tanpa PHP maupun Termux
 | Section | What it does |
 | --- | --- |
 | 📊 **Status** | Network topology, IP addresses, traffic, latency, speed tests, and vnStat statistics. |
-| 📦 **BFR** | Manage Box for Root, Backup & Restore Config, view logs, update subscriptions, include MetaCubeXD dashboard. |
+| 📦 **BFM** | Manage Box for Magisk, Backup & Restore Config, view logs, update subscriptions, include MetaCubeXD dashboard. |
 | 📁 **Files** | Browse and manage files in No Root or Root mode, change permissions, copy and move files, edit text, and handle archives. |
 | 🎛️ **Control** | Apply TTL settings, persist TTL across reboots, change the admin password, reboot, enter recovery, and shut down the device. |
 | 🪞 **Mirror** | Mirror the device screen through AndroModem. |
