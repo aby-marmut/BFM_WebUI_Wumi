@@ -47,7 +47,6 @@ Before installing Wumi, make sure your device has:
 
 Fitur Mirror memerlukan ADB melalui TCP. Fitur lainnya dapat digunakan tanpa Mirror selama kebutuhan masing-masing terpenuhi.
 
-
 ## 🚀 Installasi
 
 ### 1. Install modul
