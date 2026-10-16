@@ -1,12 +1,6 @@
 <div align="center">
 
-# Wumi
-
-**A lightweight web UI for rooted Android devices.**
-
-Manage your Android-based LTE modem, hotspot, or gateway from a single web interface.
-
-Built with Go. Runs as a standalone binary on the device.
+# BFR/BFM WebUI Wumi
 
 [![Platform](https://img.shields.io/badge/platform-Android-3DDC84?logo=android&logoColor=white)](https://www.android.com/)
 [![Language](https://img.shields.io/badge/language-Go-00ADD8?logo=go&logoColor=white)](https://go.dev/)
@@ -17,15 +11,17 @@ Built with Go. Runs as a standalone binary on the device.
 
 ---
 
+**A lightweight web UI for rooted Android devices.**
+
+Manage your Android-based LTE modem, hotspot, or gateway from a single web interface.
+
+Built with Go. Runs as a standalone binary on the device.
+
 ## 📱 About
 
-Wumi started as a personal project to make managing a rooted Android device as a network gateway a little easier.
-
-Instead of switching between shell commands, configuration files, and separate web interfaces, Wumi brings the tools I use most into one place.
-
-It runs directly on Android as a single Go binary, with no PHP or Termux required. The interface is designed for mobile screens and works alongside [Box for Root](https://github.com/taamarin/box_for_magisk).
-
-Wumi is developed primarily for my own setup, but the source is available for anyone who wants to try it, adapt it, or help test it on other devices.
+Wumi berawal dari proyek pribadi untuk mempermudah pengelolaan perangkat Android yang digunakan sebagai gateway jaringan.
+Awalnya Wumi dibuat hanya untuk kebutuhan sendiri. Kodenya kemudian dirapikan dan dibagikan agar pengguna lain bisa mencoba, mengembangkan, atau membantu menguji kompatibilitasnya dengan perangkat lain.
+Wumi berjalan langsung di Android sebagai satu biner Go, tanpa PHP maupun Termux. Antarmukanya dirancang untuk layar ponsel dan bekerja bersama Box for Root.
 
 ## ✨ Features
 
@@ -76,7 +72,7 @@ Ganti `YOUR_PASSWORD` dengan password barumu.
 
 ```text
 http://<DEVICE-IP>:8080
-
+atau
 http://127.0.0.1:8080
 ```
 
