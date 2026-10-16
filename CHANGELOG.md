@@ -2,6 +2,11 @@
 
 Ringkas; detail ada di git log.
 
+## v2.8.1 (2026-10-16)
+
+### Perbaikan
+- BFR: tombol **Start** kini memasang aturan iptables Box (`box.iptables renew`), seperti **Restart**. Di v2.8, setelah Stop membersihkan aturan, Start menghidupkan Clash tanpa aturan tproxy sehingga klien LAN keluar langsung dengan IP ISP, bukan IP node.
+
 ## v2.8 (2026-10-16)
 
 ### Baru

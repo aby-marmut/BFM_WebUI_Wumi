@@ -559,6 +559,11 @@ func bfrCtl(w http.ResponseWriter, r *http.Request) {
 		o2, _ := bfrExec(30*time.Second, bfrSh, bfrP("scripts", "box.iptables"), "disable")
 		out += o2
 	}
+	if a == "start" {
+		// v2.8.1: box.service start hanya start_box; pasang aturan iptables seperti cabang restart
+		o3, _ := bfrExec(60*time.Second, bfrSh, bfrP("scripts", "box.iptables"), "renew")
+		out += o3
+	}
 	want := a != "stop"
 	run, pid := bfrWaitState(want, 15*time.Second)
 	res := map[string]interface{}{"output": out, "running": run, "pid": pid, "settled": run == want}
