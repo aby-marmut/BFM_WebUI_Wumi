@@ -89,7 +89,7 @@ Perlindungan Wumi pada antarmuka web:
 - Permintaan dibatasi untuk loopback dan jaringan privat.
 - Modul memasang aturan iptables untuk memblokir port 5555, 8080, 8081, dan 49153 pada antarmuka seluler.
 
-### ⚠️ Wajib menggunakan auto enabler
+### ⚠️ Wajib menggunakan ADB Auto Enabler
 
 ## 🛠️ Build from Source
 
