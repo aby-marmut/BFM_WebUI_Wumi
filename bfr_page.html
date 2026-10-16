@@ -221,7 +221,7 @@ function vHome(){
     var bfrBs=m.querySelectorAll('button[data-a]');
     function bfrLock(on){bfrBs.forEach(function(x){x.dataset.busy=on?'1':'';if(on)x.disabled=true})}
     bfrBs.forEach(function(b){b.onclick=function(){
-      var a=b.dataset.a;if(!confirm('Jalankan "'+a+'" pada layanan box? Note 8 adalah gateway; jaringan bisa terputus sebentar.'))return;
+      var a=b.dataset.a;if(!confirm('Jalankan "'+a+'" pada layanan box? Perangkat ini adalah gateway; jaringan bisa terputus sebentar.'))return;
       bfrAct=a;bfrBusyUI(a==='restart'?'Restarting…':a==='start'?'Starting…':'Stopping…');bfrLock(true);toast(a+'… menunggu layanan');
       api('/api/bfr/ctl?a='+a,{}).then(function(r){bfrAct='';bfrLock(false);bfrSync(r.running,r.pid);var o=$('#out');if(o){o.style.display='block';o.textContent=r.output||'(tanpa keluaran)'}toast(r.settled?a+' selesai':a+' selesai, status belum sesuai: dicek ulang otomatis',!r.settled);bfrPoll()}).catch(function(e){bfrAct='';bfrLock(false);bfrPoll();fail(e)});
     }});

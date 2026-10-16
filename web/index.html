@@ -288,6 +288,24 @@ nav .wrap{margin:auto 0}
 .vwr b{font-variant-numeric:tabular-nums}.vwr small{grid-column:1/-1;color:var(--mute);font-size:12px;font-variant-numeric:tabular-nums}
 .vwfn{margin-top:12px;font-size:12px}
 </style>
+<style id="lgo5">
+nav{align-items:stretch!important}
+nav .wrap{min-height:100%;box-sizing:border-box}
+nav .wrap>button[data-p="0"]{margin-top:auto}
+nav .lgs{display:block;flex:0 0 18px;margin-top:auto}
+#lgo{flex:none;min-height:56px;display:flex;flex-direction:column-reverse;align-items:center;justify-content:center;gap:2px;font-size:10.5px;color:var(--bd);border-radius:10px;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
+#lgo svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#lgo:active,#lgo:focus-visible{background:var(--bdbg);outline:0}
+#lgc{position:fixed;left:0;right:0;margin:0 auto;width:max-content;max-width:calc(100vw - 24px);bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:30;background:var(--s);color:var(--ink);border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:0 14px 40px rgba(0,0,0,.3);animation:n8pop .2s ease}
+#lgc[hidden]{display:none}
+#lgc p{margin:0 0 10px;font-weight:700;font-size:14px}
+#lgc .btns{display:flex;gap:8px;margin:0}
+#lgc button{flex:1;min-width:84px;min-height:44px;border:1px solid var(--line);border-radius:12px;background:var(--s2);color:var(--ink);font:inherit;font-weight:700}
+#lgc button.dng{background:var(--bd);border-color:var(--bd);color:#fff}
+#lgc .lgcspin{display:flex;align-items:center;gap:12px;font-weight:700;font-size:14px;min-height:44px}
+#lgc .lgcspin i{width:22px;height:22px;border:3px solid var(--line);border-top-color:var(--bd);border-radius:50%;animation:lgrot .8s linear infinite;flex:none}
+@keyframes lgrot{to{transform:rotate(360deg)}}
+</style>
 </head>
 <body>
 <header><div class="wrap hd"><div class="hdv off" id="hdv" title="Perangkat ADB"><span class="ic"><svg viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg></span><span class="t" id="hdn">…</span></div><a class="brand" id="brand" href="#status" aria-label="Wumi, ke menu Status"><svg class="wlogo" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="wmg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2F6BFF"/><stop offset="1" stop-color="#0BA678"/></linearGradient></defs><rect width="32" height="32" rx="9" fill="url(#wmg)"/><path d="M7.5 11l3.2 10 5.3-8.2 5.3 8.2 3.2-10" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="25" cy="7" r="2" fill="#fff" fill-opacity=".85"/></svg><span class="wname">Wumi</span></a><a class="mc" href="/ui/" target="_blank" rel="noopener">MetaCube</a></div></header>
@@ -392,6 +410,8 @@ nav .wrap{margin:auto 0}
   <button data-p="3"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>Control</button>
   <button data-p="4"><svg viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg>Mirror</button>
   <button data-p="5"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>My Wumi</button>
+  <i class="lgs" aria-hidden="true"></i>
+  <div id="lgo" role="button" tabindex="0" aria-label="Keluar"><span>Keluar</span><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></div>
 </div></nav>
 
 <div class="ov" id="ov"><div class="sheet" id="sheet" role="dialog" aria-modal="true">
@@ -991,4 +1011,19 @@ vload();setInterval(vload,30000);sppoll();
 document.querySelector('nav button[data-p="5"]').addEventListener('click',vload);
 })();
 </script>
-</body></html>
+<script id="lgo5j">/* apply-v28b: menu Keluar, ketuk ikon lalu OK; spinner + batas waktu */
+(function(){var b=document.getElementById("lgo");if(!b)return;var c=document.createElement("div"),t,busy=0;c.id="lgc";c.hidden=true;document.body.appendChild(c);
+function ask(){busy=0;c.innerHTML="<p>Lanjut keluar halaman?</p><div class=\"btns\"><button class=\"dng\" id=\"lgok\">OK</button><button id=\"lgno\">Batal</button></div>";document.getElementById("lgno").onclick=hide;document.getElementById("lgok").onclick=go}
+function hide(){if(busy)return;c.hidden=true;clearTimeout(t)}
+function show(){ask();c.hidden=false;clearTimeout(t);t=setTimeout(hide,10000)}
+function fail(m){busy=0;c.innerHTML="<p>Gagal keluar: "+m+"</p><div class=\"btns\"><button class=\"dng\" id=\"lgok\">Coba lagi</button><button id=\"lgno\">Tutup</button></div>";document.getElementById("lgno").onclick=hide;document.getElementById("lgok").onclick=go}
+function go(){busy=1;clearTimeout(t);c.innerHTML="<div class=\"lgcspin\"><i></i><span>Keluar...</span></div>";
+var ac=new AbortController(),tm=setTimeout(function(){ac.abort()},6000);
+api("/api/logout",{method:"POST",signal:ac.signal}).then(function(){clearTimeout(tm);location.replace("/login")}).catch(function(e){clearTimeout(tm);fail(e&&e.name=="AbortError"?"waktu habis (6 dtk)":(e&&e.message)||"tidak diketahui")})}
+/* sentuhan di ikon/kartu tidak boleh menutup menu samping (kartu tidak ikut bergeser) */
+["pointerdown","touchstart","mousedown"].forEach(function(n){window.addEventListener(n,function(e){if(e.target.closest&&e.target.closest("#lgc,#lgo"))e.stopPropagation()},true)});
+b.addEventListener("click",function(e){e.stopPropagation();if(busy)return;c.hidden?show():hide()});
+b.addEventListener("keydown",function(e){if(e.key=="Enter"||e.key==" "){e.preventDefault();b.click()}});
+document.addEventListener("click",function(e){if(!c.hidden&&!c.contains(e.target)&&e.target!==b&&!b.contains(e.target))hide()});
+document.addEventListener("keydown",function(e){if(e.key=="Escape")hide()})})();
+</script></body></html>

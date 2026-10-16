@@ -554,6 +554,11 @@ func bfrCtl(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	out, err := bfrExec(90*time.Second, bfrSh, bfrP("scripts", "box.service"), a)
+	if a == "stop" {
+		// v2.8: box.service stop tidak membersihkan iptables (TPROXY 9898, DNS 7874)
+		o2, _ := bfrExec(30*time.Second, bfrSh, bfrP("scripts", "box.iptables"), "disable")
+		out += o2
+	}
 	want := a != "stop"
 	run, pid := bfrWaitState(want, 15*time.Second)
 	res := map[string]interface{}{"output": out, "running": run, "pid": pid, "settled": run == want}
