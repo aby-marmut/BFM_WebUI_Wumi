@@ -507,7 +507,7 @@ func mirrorServer(addr, mainPort string) {
 		if err != nil {
 			host = r.Host
 		}
-		w.Header().Set("Content-Security-Policy", "frame-ancestors http://"+host+":"+mainPort)
+		w.Header().Set("Content-Security-Policy", "frame-ancestors http://"+host+":"+mainPort+" http://"+host+" http://"+host+":*")
 		p.ServeHTTP(w, r)
 	})
 	srv := &http.Server{Addr: addr, Handler: lanOnly(h), ReadHeaderTimeout: 10 * time.Second}
@@ -1230,6 +1230,7 @@ func main() {
 	registerWumi(mux)
 	registerVnstat(mux)
 	registerSpeedtest(mux)
+	registerUpdate(mux)
 	mux.HandleFunc("/api/control/state", needAuth(controlStateH))
 	mux.HandleFunc("/api/control/ttl", post(ttlH))
 	mux.HandleFunc("/api/control/power", post(powerH))

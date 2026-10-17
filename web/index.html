@@ -306,6 +306,7 @@ nav .lgs{display:block;flex:0 0 18px;margin-top:auto}
 #lgc .lgcspin i{width:22px;height:22px;border:3px solid var(--line);border-top-color:var(--bd);border-radius:50%;animation:lgrot .8s linear infinite;flex:none}
 @keyframes lgrot{to{transform:rotate(360deg)}}
 </style>
+<style id="upd5">.tile{position:relative}nav .wrap>button[data-p="3"]{position:relative}.udot{position:absolute;top:8px;right:12px;width:10px;height:10px;border-radius:50%;background:#e5484d;box-shadow:0 0 0 2px var(--bg,#fff);display:block}.udot[hidden]{display:none}.ubadge{display:inline-block;background:#e5484d;color:#fff;border-radius:10px;padding:2px 9px;font-size:12px;margin-left:6px}.unote{margin-top:10px}.unote ul{margin:4px 0 0 18px;padding:0}.urow{display:flex;justify-content:space-between;gap:10px;margin:4px 0}.uset{display:flex;align-items:center;gap:8px;margin-top:14px}</style>
 </head>
 <body>
 <header><div class="wrap hd"><div class="hdv off" id="hdv" title="Perangkat ADB"><span class="ic"><svg viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg></span><span class="t" id="hdn">…</span></div><a class="brand" id="brand" href="#status" aria-label="Wumi, ke menu Status"><svg class="wlogo" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="wmg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2F6BFF"/><stop offset="1" stop-color="#0BA678"/></linearGradient></defs><rect width="32" height="32" rx="9" fill="url(#wmg)"/><path d="M7.5 11l3.2 10 5.3-8.2 5.3 8.2 3.2-10" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="25" cy="7" r="2" fill="#fff" fill-opacity=".85"/></svg><span class="wname">Wumi</span></a><a class="mc" href="/ui/" target="_blank" rel="noopener">MetaCube</a></div></header>
@@ -365,6 +366,7 @@ nav .lgs{display:block;flex:0 0 18px;margin-top:auto}
   <button class="tile" id="td"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 3v9M6.3 6.8a8 8 0 1 0 11.4 0"/></svg></span><span><b>Control Devices</b><span>Reboot, Shutdown, Reboot Recovery</span></span></button>
   <button class="tile" id="adm_tile"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16 7l3 3M14 9l2 2"/></svg></span><span><b>Admin</b><span>Ganti sandi login</span></span></button>
   <button class="tile" id="trm_tile"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 6l6 6-6 6M12 18h8"/></svg></span><span><b>Terminal</b><span>Shell root interaktif</span></span></button>
+  <button class="tile" id="upd_tile"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg></span><span><b>Cek pembaruan</b><span id="upd_sub">Versi Wumi dan rilis terbaru</span></span><i class="udot" id="upd_dot" hidden></i></button>
 </div></div>
 
 <div class="pg" id="p4"><div class="card">
@@ -1026,4 +1028,51 @@ b.addEventListener("click",function(e){e.stopPropagation();if(busy)return;c.hidd
 b.addEventListener("keydown",function(e){if(e.key=="Enter"||e.key==" "){e.preventDefault();b.click()}});
 document.addEventListener("click",function(e){if(!c.hidden&&!c.contains(e.target)&&e.target!==b&&!b.contains(e.target))hide()});
 document.addEventListener("keydown",function(e){if(e.key=="Escape")hide()})})();
-</script></body></html>
+</script><script id="upd5js">
+(function(){
+var UK='upd_seen',D=null;
+function h(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function g(u,o){o=o||{};o.credentials='same-origin';o.headers=Object.assign({'X-Requested-With':'wumi'},o.headers||{});return fetch(u,o).then(function(r){if(!r.ok)throw new Error(r.status);return r.json?r.text().then(function(t){try{return JSON.parse(t)}catch(e){return t}}):r})}
+function seen(){try{return localStorage.getItem(UK)||''}catch(e){return ''}}
+function mark(v){try{localStorage.setItem(UK,v)}catch(e){}}
+var nb=document.querySelector('nav button[data-p="3"]');
+if(nb){var di=document.createElement('i');di.className='udot';di.id='upd_ndot';di.hidden=true;nb.appendChild(di)}
+function dots(){
+ var on=!!(D&&D.notif&&D.available&&seen()!==D.latest);
+ ['upd_dot','upd_ndot'].forEach(function(i){var e=document.getElementById(i);if(e)e.hidden=!on});
+ var s=document.getElementById('upd_sub');
+ if(s)s.textContent=(D&&D.available)?('Versi baru '+D.latest+' tersedia'):'Versi Wumi dan rilis terbaru'}
+function load(r){return g('/api/update'+(r?'?refresh=1':'')).then(function(d){D=d;dots();return d})}
+function sec(t,a){return(a&&a.length)?'<div class="unote"><b>'+t+'</b><ul>'+a.map(function(x){return'<li>'+h(x)+'</li>'}).join('')+'</ul></div>':''}
+function body(){
+ var d=D,s='';
+ s+='<div class="urow"><span>Terpasang</span><b>'+h(d.cur)+'</b></div>';
+ s+='<div class="urow"><span>Terbaru</span><b>'+h(d.latest||'-')+(d.available?'<span class="ubadge">Tersedia</span>':'')+'</b></div>';
+ if(d.err)s+='<div class="mute" style="margin-top:6px">Cek gagal: '+h(d.err)+'</div>';
+ else if(d.latest&&!d.available)s+='<div class="mute" style="margin-top:6px">Sudah versi terbaru.</div>';
+ else if(!d.latest)s+='<div class="mute" style="margin-top:6px">Belum ada hasil cek.</div>';
+ if(d.available){s+=sec('Perbaikan bug',d.fixes)+sec('Fitur baru',d.feats)+sec('Lainnya',d.other);
+  if(d.url)s+='<div class="unote"><a href="'+h(d.url)+'" target="_blank" rel="noopener">Buka halaman rilis</a></div>'}
+ s+='<div class="btns" style="margin-top:12px"><button id="uc_btn">Cek sekarang</button></div>';
+ s+='<label class="uset"><input type="checkbox" id="uc_n"'+(d.notif?' checked':'')+'> Beri tahu bila ada pembaruan</label>';
+ return s}
+function open(){
+ op('Cek pembaruan','<div id="uc_body"></div>',function(){
+  var b=document.getElementById('uc_body');
+  function draw(){
+   b.innerHTML=body();
+   document.getElementById('uc_btn').onclick=function(){
+    var t=this;t.disabled=true;t.textContent='Memeriksa...';
+    load(true).then(function(){draw()}).catch(function(){t.disabled=false;t.textContent='Cek sekarang';toast('Gagal memeriksa')})};
+   document.getElementById('uc_n').onchange=function(){
+    var c=this.checked;
+    g('/api/update/setting',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({notif:c})}).then(function(){D.notif=c;dots()}).catch(function(){toast('Gagal menyimpan')})}}
+  draw();
+  if(D.latest)mark(D.latest);dots()},1)}
+document.getElementById('upd_tile').onclick=function(){
+ (D?Promise.resolve(D):load(false)).then(open).catch(function(){toast('Gagal memuat')})};
+setTimeout(function(){load(false).catch(function(){})},4000);
+setInterval(function(){load(false).catch(function(){})},6*3600*1000);
+})();
+</script>
+</body></html>

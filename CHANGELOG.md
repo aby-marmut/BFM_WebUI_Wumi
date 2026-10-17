@@ -2,6 +2,14 @@
 
 Ringkas; detail ada di git log.
 
+## v2.9 (2026-10-17)
+
+### Baru
+- Kartu **Cek pembaruan** di menu Control: versi terpasang, rilis terbaru, catatan rilis (perbaikan bug dan fitur baru), tombol Cek sekarang, dan saklar notifikasi. Titik merah muncul di menu Control dan di kartu bila ada versi baru. Hanya memberi tahu, tanpa unduh atau pasang otomatis.
+
+### Perbaikan
+- Mirror kini bisa dihubungkan saat Wumi dibuka lewat port 80 (tanpa :8080), misalnya dari menu "Kelola router" Android klien.
+
 ## v2.8.1 (2026-10-16)
 
 ### Perbaikan
